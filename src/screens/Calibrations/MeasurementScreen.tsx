@@ -18,8 +18,13 @@ import {
 } from "../../features/store/storeHooks";
 
 import React from "react";
-import { getCalibrationsMeasurements } from "../../features/localDB/calibrations";
+import {
+  calibrationExists,
+  getCalibrationsMeasurements,
+} from "../../features/localDB/calibrations";
 import { MeasurementLocalDB } from "../../features/localDB/types";
+import TS from "../../../TS";
+import { sendCalibration } from "../../features/backend/calibrations";
 
 type CustomMeasurement = MeasurementLocalDB & { ID: number };
 
@@ -33,6 +38,9 @@ function CalibrationMeasurement({
   const dispatch = useTypedDispatch();
   const lastMeasurement = useTypedSelector(
     (state) => state.measurement.lastMeasurement,
+  );
+  const calibrationId = useTypedSelector(
+    (state) => state.measurement.calibrationID,
   );
 
   async function fetchMeasurements() {
@@ -56,7 +64,17 @@ function CalibrationMeasurement({
     }, []),
   );
 
-  const last = measurements.length > 0 ? measurements[0] : null;
+  async function handleSendCalibration() {
+    if (!calibrationId || measurements.length === 0) {
+      return;
+    }
+    try {
+      await sendCalibration(calibrationId);
+      navigation.navigate("CalibrationsList");
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   return (
     <View
@@ -113,7 +131,11 @@ function CalibrationMeasurement({
         ))}
       </ScrollView>
 
-      <Button>Enviar Calibración</Button>
+      {measurements.length > 0 && (
+        <Button onPress={handleSendCalibration}>
+          {TS.t("calibration_send_button")}
+        </Button>
+      )}
     </View>
   );
 }

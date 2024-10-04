@@ -3,11 +3,41 @@ import { SendStatus, execQuery, execTransaction } from "./localDB";
 import { measurementToBackendFormat } from "./measurements";
 import { TablesNames } from "./tablesDefinition";
 import {
+  CalibrationLocalDB,
   CalibrationLocalDBExtended,
   CalibrationsFromMeasurementsLocalDB,
   MeasurementLocalDB,
   calibrationsFromFunctionFromBackend,
 } from "./types";
+
+export async function getCalibrationForBack(id: number) {
+  const {
+    rows: {
+      _array: [calibration],
+    },
+  } = await execQuery(
+    `SELECT * FROM ${TablesNames.CALIBRATIONS} WHERE ID = ${id}`,
+  );
+
+  const {
+    rows: { _array: measurements },
+  } = await execQuery(
+    `SELECT ${TablesNames.MEASUREMENTS}.* 
+    FROM ${TablesNames.CALIBRATIONS_FROM_MEASUREMENTS} 
+    JOIN ${TablesNames.CALIBRATIONS_MEASUREMENTS} ON ${TablesNames.CALIBRATIONS_MEASUREMENTS}.calibrationID = ${TablesNames.CALIBRATIONS_FROM_MEASUREMENTS}.ID
+    JOIN ${TablesNames.MEASUREMENTS} ON ${TablesNames.CALIBRATIONS_MEASUREMENTS}.ID = ${TablesNames.MEASUREMENTS}.ID
+    WHERE ${TablesNames.CALIBRATIONS_FROM_MEASUREMENTS}.ID = ${id}`,
+  );
+  return {
+    name: calibration.name,
+    measurements: measurements.map((row) => {
+      return {
+        id: row.ID.toString() as string,
+        measurement: measurementToBackendFormat(row),
+      };
+    }),
+  };
+}
 
 /**It gets a vector with all the calibrations and its measurements that are ready for being sent*/
 export async function getCalibrationsForBack(): Promise<
@@ -59,7 +89,6 @@ export async function updateToCalibrationFunctionFromServer(
   backendCalibrationID: string,
 ) {
   const timestamp = new Date().valueOf();
-  console.log({ calibrationID, backendCalibrationID });
 
   return execTransaction(
     [
@@ -170,15 +199,15 @@ export async function calibrationExists(name: string) {
 
 export async function getCalibrations() {
   return execQuery(
-    `SELECT calibrations.*,
-     (cfm.ID IS NOT NULL) AS fromMeasurement ,
-     (cff.ID IS NOT NULL) AS fromFunction 
+    `SELECT calibrations.*, (cfm.sendStatus = ${SendStatus.SENT}) AS sent
     FROM calibrations
     LEFT JOIN calibrationsFromMeasurements AS cfm ON cfm.ID = calibrations.ID
-    LEFT JOIN calibrationsFromFunction AS cff ON cff.ID = calibrations.ID
      `,
     [],
-  ).then((result) => result.rows._array as CalibrationLocalDBExtended[]);
+  ).then(
+    (result) =>
+      result.rows._array as (CalibrationLocalDBExtended & { sent: boolean })[],
+  );
 }
 
 /** Show the calibrations made from measurement with its name and function */

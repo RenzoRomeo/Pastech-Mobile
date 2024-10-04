@@ -7,7 +7,7 @@ import { MeasurementLocalDB } from "./types";
 /** Get the unsent measurements from localDB, and marks them as sending  */
 export async function getMeasurementsForBack(): Promise<MeasurementForBack[]> {
   return execTransaction([
-    `SELECT * FROM ${TablesNames.MEASUREMENTS} WHERE sendStatus = ${SendStatus.NOT_SENT}`,
+    `SELECT * FROM ${TablesNames.MEASUREMENTS} WHERE sendStatus = ${SendStatus.NOT_SENT} AND ID NOT IN (SELECT ID FROM ${TablesNames.CALIBRATIONS_MEASUREMENTS})`,
     `UPDATE ${TablesNames.MEASUREMENTS} SET sendStatus = ${SendStatus.SENDING} WHERE sendStatus = ${SendStatus.NOT_SENT}`,
   ]).then((results) => {
     const measurements = results[0].rows._array;
@@ -31,19 +31,19 @@ export function measurementToBackendFormat(row: any): MeasurementForBack {
 /** Get last measurement from localdb */
 export async function getLastMeasurement() {
   return execQuery(
-    `SELECT * FROM ${TablesNames.MEASUREMENTS} WHERE timestamp = (SELECT MAX(timestamp) FROM ${TablesNames.MEASUREMENTS})`
+    `SELECT * FROM ${TablesNames.MEASUREMENTS} WHERE timestamp = (SELECT MAX(timestamp) FROM ${TablesNames.MEASUREMENTS})`,
   ).then((result) => result.rows._array[0] as undefined | MeasurementLocalDB);
 }
 
 /** Get the n last measurement from localdb */
 export async function getNLastMeasurements(
-  n: number
+  n: number,
 ): Promise<MeasurementLocalDB[]> {
   return execQuery(
     `SELECT * FROM ${TablesNames.MEASUREMENTS} 
     ORDER BY timestamp DESC
     LIMIT ? ;`,
-    [n]
+    [n],
   ).then((result) => result.rows._array as MeasurementLocalDB[]);
 }
 
@@ -65,7 +65,7 @@ export async function insertMeasurement(measurement: Measurement) {
 
   return execQuery(
     `INSERT INTO measurements (${keys}sendStatus) values (${placeHolder}?)`,
-    values
+    values,
   ).then((result) => result.insertId as number);
 }
 
@@ -78,11 +78,11 @@ export async function insertMeasurement(measurement: Measurement) {
  */
 export async function insertCalibrationMeasurement(
   calibrationID: number,
-  measurementID: number
+  measurementID: number,
 ) {
   return execQuery(
     `INSERT INTO calibrationsMeasurements (ID,calibrationID,weight) values (?,?,?)`,
-    [measurementID, calibrationID, 0]
+    [measurementID, calibrationID, 0],
   ).then((result) => result.insertId as number);
 }
 
@@ -94,22 +94,16 @@ export async function getMeasurements() {
 
 export async function getMeasurementsBetween(
   from: number,
-  until: number = new Date().getTime()
+  until: number = new Date().getTime(),
 ) {
   return execQuery(
     `SELECT * FROM measurements WHERE timestamp BETWEEN (?) AND (?)`,
-    [from, until]
+    [from, until],
   );
 }
 
+export async function deleteMeasurement(measurement: MeasurementLocalDB) {
+  console.log("Deleting", measurement);
 
-export async function deleteMeasurement(
-measurement:MeasurementLocalDB
-) {
-  console.log("Deleting",measurement);
-  
-  return execQuery(
-    `DELETE FROM measurements WHERE ID=?`,
-    [measurement.ID]
-  )
+  return execQuery(`DELETE FROM measurements WHERE ID=?`, [measurement.ID]);
 }

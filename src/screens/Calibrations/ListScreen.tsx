@@ -32,17 +32,19 @@ import {
 //==== Navigation ==============================================
 import { PropsCalibrationList } from "./Stack.types";
 
-function calibracionIncompleta(func: string | null) {
+type CustomCalibration = CalibrationLocalDBExtended & { sent: boolean };
+
+function incompleteCalibration(calibration: CustomCalibration) {
+  const func = calibration.function;
   return !func || func?.split(",").every((value) => value === "0");
 }
 
 export default function CalibrationsList({ navigation }: PropsCalibrationList) {
   //Value represents id in database
-  const [calibrations, setCalibrations] =
-    useState<CalibrationLocalDBExtended[]>();
+  const [calibrations, setCalibrations] = useState<CustomCalibration[]>();
 
   const [selectedCalibration, setSelectedCalibration] =
-    useState<CalibrationLocalDBExtended>();
+    useState<CustomCalibration>();
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -61,7 +63,7 @@ export default function CalibrationsList({ navigation }: PropsCalibrationList) {
   }
 
   const Item = useCallback(
-    (props: { item: CalibrationLocalDBExtended }) => {
+    (props: { item: CustomCalibration }) => {
       const { item } = props;
       return (
         <Pressable
@@ -81,7 +83,7 @@ export default function CalibrationsList({ navigation }: PropsCalibrationList) {
             alignItems="center"
           >
             <Heading>{item.name}</Heading>
-            {calibracionIncompleta(item.function) && (
+            {incompleteCalibration(item) && !item.sent ? (
               <IconButton
                 _icon={{
                   as: Entypo,
@@ -98,7 +100,7 @@ export default function CalibrationsList({ navigation }: PropsCalibrationList) {
                   });
                 }}
               />
-            )}
+            ) : null}
           </HStack>
           <Divider />
         </Pressable>
@@ -127,9 +129,14 @@ export default function CalibrationsList({ navigation }: PropsCalibrationList) {
             maxHeight="85%"
             minHeight="10%"
             width="100%"
-            data={calibrations.sort((a, _) =>
-              calibracionIncompleta(a.function) ? -1 : 1,
-            )}
+            data={[
+              ...calibrations.filter((calibration) =>
+                incompleteCalibration(calibration),
+              ),
+              ...calibrations.filter(
+                (calibration) => !incompleteCalibration(calibration),
+              ),
+            ]}
             renderItem={Item}
           />
         ) : (

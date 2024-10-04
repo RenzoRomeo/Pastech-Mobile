@@ -1,5 +1,7 @@
+import { measure } from "react-native-reanimated";
 import TS from "../../../TS";
 import {
+  getCalibrationForBack,
   getCalibrationsForBack,
   getCalibrationsFromBackInLocalDB,
   insertCalibrationFromBack,
@@ -30,6 +32,31 @@ export async function synchronizeCalibrations(
     foreground && pushNotification(TS.t("calibrations_cannot_sync"), "error");
     console.error(e);
     return false;
+  }
+}
+
+export async function sendCalibration(calibrationId: number) {
+  const { name, measurements } = await getCalibrationForBack(calibrationId);
+  try {
+    const res = await postCalibration({
+      name,
+      measurements,
+    });
+    if ("code" in res) {
+      throw new Error(`Erro on server response: ${res}`);
+    }
+    setSendStatus(
+      SendStatus.SENT,
+      TablesNames.CALIBRATIONS_FROM_MEASUREMENTS,
+      calibrationId,
+    );
+  } catch (err) {
+    await setSendStatus(
+      SendStatus.FOR_SENDING,
+      TablesNames.CALIBRATIONS_FROM_MEASUREMENTS,
+      calibrationId,
+    );
+    throw new Error(`Error getting calibrations`);
   }
 }
 
