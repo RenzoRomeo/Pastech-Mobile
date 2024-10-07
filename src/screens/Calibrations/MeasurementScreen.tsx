@@ -87,12 +87,7 @@ function CalibrationMeasurement({
         style={{ paddingHorizontal: 30 }}
       >
         <Text marginY={SPACE_BETWEEN_TEXT} fontSize="lg" fontWeight="bold">
-          Presione el boton del pasturometro para realizar medicion
-        </Text>
-        <View style={{ height: 5 }} />
-        <Text marginY={SPACE_BETWEEN_TEXT} fontSize="lg" fontWeight="bold">
-          Anote el numero en pantalla para posteriormente asociarlo al peso de
-          pasto seco de la medicion
+          Realice las mediciones de la calibración.
         </Text>
       </View>
       <ScrollView
