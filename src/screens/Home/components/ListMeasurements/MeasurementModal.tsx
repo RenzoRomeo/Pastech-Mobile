@@ -41,8 +41,7 @@ export default function MeasurementModal(props: {
             {/* <Modal.CloseButton /> */}
           </Modal.Header>
           <Modal.Body style={{ marginLeft: 10 }}>
-
-            <VStack >
+            <VStack>
               <Text fontSize={"lg"}>{TS.t("date")}</Text>
               <HStack justifyContent={"space-between"}>
                 <Text fontSize={"2xl"}>
@@ -63,10 +62,10 @@ export default function MeasurementModal(props: {
                 <Text fontSize={"lg"}>{TS.t("localization")}</Text>
                 <HStack justifyContent={"space-between"}>
                   <Text fontSize={"2xl"}>
-                    Lat {measurement.latitude.toFixed(3)}
+                    {measurement.latitude.toFixed(7)}
                   </Text>
                   <Text fontSize={"2xl"}>
-                    Lon {measurement.longitude.toFixed(3)}
+                    {measurement.longitude.toFixed(7)}
                   </Text>
                 </HStack>
               </VStack>
