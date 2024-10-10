@@ -44,7 +44,9 @@ export async function updateMeasurements(
 }
 
 /** Post the given measurements and returns a promise with the parsed json response from the server */
-async function postMeasurements(measurements: MeasurementForBack[]) {
+async function postMeasurements(
+  measurements: (MeasurementForBack & { sectorId: number | null })[],
+) {
   return fetch(
     `${mobileAPI}/measurements`,
     createPayload("POST", { measurements }),

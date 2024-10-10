@@ -5,19 +5,34 @@ import { TablesNames } from "./tablesDefinition";
 import { MeasurementLocalDB } from "./types";
 
 /** Get the unsent measurements from localDB, and marks them as sending  */
-export async function getMeasurementsForBack(): Promise<MeasurementForBack[]> {
-  return execTransaction([
+export async function getMeasurementsForBack(): Promise<
+  (MeasurementForBack & { sectorId: number | null })[]
+> {
+  const res = await execTransaction([
     `SELECT * FROM ${TablesNames.MEASUREMENTS} WHERE sendStatus = ${SendStatus.NOT_SENT} AND ID NOT IN (SELECT ID FROM ${TablesNames.CALIBRATIONS_MEASUREMENTS})`,
     `UPDATE ${TablesNames.MEASUREMENTS} SET sendStatus = ${SendStatus.SENDING} WHERE sendStatus = ${SendStatus.NOT_SENT}`,
-  ]).then((results) => {
-    const measurements = results[0].rows._array;
-    const forBackMeasurements = measurements.map((row) => {
-      return measurementToBackendFormat(row);
-    });
-    console.log(forBackMeasurements);
-
-    return forBackMeasurements;
+  ]);
+  const measurements = res[0].rows._array;
+  const forBackMeasurements = measurements.map((row) => {
+    return measurementToBackendFormat(row);
   });
+
+  const output = await Promise.all(
+    forBackMeasurements.map(async (measurement) => {
+      const result = await execQuery(
+        `SELECT ID FROM ${TablesNames.SECTORS} WHERE start_date <= ${new Date(
+          measurement.timestamp,
+        ).getTime()} AND ${new Date(
+          measurement.timestamp,
+        ).getTime()} <= finish_date`,
+      );
+      const sectorId =
+        result.rows._array.length > 0 ? result.rows._array[0].ID : null;
+      return { ...measurement, sectorId };
+    }),
+  );
+
+  return output;
 }
 
 export function measurementToBackendFormat(row: any): MeasurementForBack {
