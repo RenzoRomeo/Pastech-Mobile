@@ -86,19 +86,23 @@ export default function MeasurementModal(props: {
               >
                 {TS.t("cancel")}
               </Button>
-              <Button
-                leftIcon={<Icon as={MaterialIcons} name="delete" />}
-                _text={{ color: "white" }}
-                size="lg"
-                colorScheme="danger"
-                onPress={() => {
-                  props.onDelete();
-                  // props.setShowModal(false);
-                  // props.measurement?.ID && props.onDelete(props.info?.ID);
-                }}
-              >
-                {TS.t("delete")}
-              </Button>
+              {measurement.sendStatus !== SendStatus.SENT ? (
+                <Button
+                  leftIcon={<Icon as={MaterialIcons} name="delete" />}
+                  _text={{ color: "white" }}
+                  size="lg"
+                  colorScheme="danger"
+                  onPress={() => {
+                    props.onDelete();
+                    // props.setShowModal(false);
+                    // props.measurement?.ID && props.onDelete(props.info?.ID);
+                  }}
+                >
+                  {TS.t("delete")}
+                </Button>
+              ) : (
+                <></>
+              )}
             </Button.Group>
           </Modal.Footer>
         </Modal.Content>
