@@ -25,7 +25,7 @@ export async function synchronizeCalibrations(
   foreground?: boolean,
 ): Promise<boolean> {
   try {
-    if (Permission.postCalibrations()) await updateCalibrations(foreground);
+    // if (Permission.postCalibrations()) await updateCalibrations(foreground);
     if (Permission.getCalibrations()) await downloadCalibrations(foreground);
     return true;
   } catch (e) {
@@ -43,7 +43,7 @@ export async function sendCalibration(calibrationId: number) {
       measurements,
     });
     if ("code" in res) {
-      throw new Error(`Erro on server response: ${res}`);
+      throw new Error(`Error on server response: ${res}`);
     }
     setSendStatus(
       SendStatus.SENT,
@@ -56,7 +56,7 @@ export async function sendCalibration(calibrationId: number) {
       TablesNames.CALIBRATIONS_FROM_MEASUREMENTS,
       calibrationId,
     );
-    throw new Error(`Error getting calibrations`);
+    throw new Error(`Error sending calibrations`);
   }
 }
 
@@ -65,6 +65,7 @@ async function updateCalibrations(foreground?: boolean) {
   const promises = calibrations.map(async (calibration) => {
     try {
       const res = await postCalibration(calibration.forBackendData);
+      console.log(res);
       if ("code" in res) throw new Error("Error on Server Response: " + res);
       else {
         //Maybe i should delete the row if it
@@ -80,7 +81,7 @@ async function updateCalibrations(foreground?: boolean) {
         TablesNames.CALIBRATIONS_FROM_MEASUREMENTS,
         calibration.calibrationID,
       );
-      throw new Error(`Error getting calibrations`);
+      throw new Error(`Error sending calibrations`);
     }
   });
   return Promise.all(promises);
