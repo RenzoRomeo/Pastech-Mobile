@@ -51,7 +51,10 @@ function CalibrationMeasurement({
   }
 
   useEffect(() => {
-    fetchMeasurements();
+    const timeout = setTimeout(fetchMeasurements, 100);
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [lastMeasurement]);
 
   useFocusEffect(
