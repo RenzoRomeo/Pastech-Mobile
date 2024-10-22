@@ -33,12 +33,16 @@ export default function PaddockStackScreen() {
         component={HomeScreen}
         options={{ headerTitle: TS.t("paddock_home_title") }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="CreatePaddock"
         component={CreatePaddock}
         options={{ headerTitle: "Modificar Potrero" }}
-      />
-      {/* <Stack.Screen name='EditScreen' component={EditScreen} options={{headerTitle: 'Map'}}/> */}
+      /> */}
+      {/* <Stack.Screen
+        name="EditScreen"
+        component={EditScreen}
+        options={{ headerTitle: "Map" }}
+      /> */}
       <Stack.Screen
         name="FiltersScreen"
         component={FiltersScreen}

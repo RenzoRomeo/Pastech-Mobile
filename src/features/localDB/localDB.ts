@@ -2,7 +2,7 @@ import * as SQLite from "expo-sqlite";
 import { SendableTables } from "./types";
 import { TablesNames } from "./tablesDefinition";
 
-const db = SQLite.openDatabase("1pastar.db");
+const db = SQLite.openDatabase("7pastar.db");
 
 //We declare foreigns key, for that, we should import a pragma module
 //with a query
