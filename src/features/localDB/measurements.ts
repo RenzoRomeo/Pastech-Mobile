@@ -56,6 +56,7 @@ export async function getNLastMeasurements(
 ): Promise<MeasurementLocalDB[]> {
   return execQuery(
     `SELECT * FROM ${TablesNames.MEASUREMENTS} 
+    WHERE ID NOT IN (SELECT DISTINCT ID FROM ${TablesNames.CALIBRATIONS_MEASUREMENTS})
     ORDER BY timestamp DESC
     LIMIT ? ;`,
     [n],
