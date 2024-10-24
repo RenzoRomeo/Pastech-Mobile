@@ -1,27 +1,5 @@
-import {
-  Accuracy,
-  getCurrentPositionAsync,
-  getLastKnownPositionAsync,
-} from "expo-location";
-
-const LOCATION_TIMEOUT_MINUTES = 5;
+import store from "../store/store";
 
 export async function getLocation() {
-  try {
-    const lastKnown = await getLastKnownPositionAsync();
-
-    if (
-      lastKnown &&
-      Date.now() - lastKnown.timestamp < LOCATION_TIMEOUT_MINUTES * 60 * 1000
-    ) {
-      return lastKnown;
-    }
-
-    return await getCurrentPositionAsync({
-      accuracy: Accuracy.BestForNavigation,
-    });
-  } catch (err) {
-    console.error(err);
-    return undefined;
-  }
+  return store.getState().location.location;
 }

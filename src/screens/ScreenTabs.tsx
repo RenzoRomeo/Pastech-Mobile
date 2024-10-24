@@ -22,8 +22,11 @@ import TS from "../../TS";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BatteryLevel from "../components/Battery";
 import store from "../features/store/store";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useTypedSelector } from "../features/store/storeHooks";
+import { useEffect } from "react";
+import { Accuracy, watchPositionAsync } from "expo-location";
+import { setLocation } from "../features/store/locationSlice";
 
 const Tab = createBottomTabNavigator<RootTabsParamList>();
 
@@ -31,6 +34,24 @@ export default function ScreenTabs() {
   const user = useTypedSelector((state) => state.backend.user || false);
 
   const insets = useSafeAreaInsets();
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const subscription = watchPositionAsync(
+      {
+        accuracy: Accuracy.BestForNavigation,
+        timeInterval: 5000,
+      },
+      (location) => {
+        dispatch(setLocation({ location }));
+      },
+    );
+    return () => {
+      subscription.then((subscription) => subscription.remove());
+    };
+  }, []);
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
