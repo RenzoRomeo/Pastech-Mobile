@@ -35,23 +35,6 @@ export default function ScreenTabs() {
 
   const insets = useSafeAreaInsets();
 
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const subscription = watchPositionAsync(
-      {
-        accuracy: Accuracy.BestForNavigation,
-        timeInterval: 5000,
-      },
-      (location) => {
-        dispatch(setLocation({ location }));
-      },
-    );
-    return () => {
-      subscription.then((subscription) => subscription.remove());
-    };
-  }, []);
-
   return (
     <Tab.Navigator
       initialRouteName="Home"

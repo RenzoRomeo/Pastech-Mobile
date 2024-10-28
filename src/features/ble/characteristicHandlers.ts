@@ -20,6 +20,8 @@ import {
 } from "../localDB/measurements";
 
 import { setUpdateMeasures } from "../store/filterSlice";
+import TS from "../../../TS";
+import { pushNotification } from "../pushNotification";
 
 //==== LocalDB =================================================
 
@@ -80,32 +82,53 @@ const stringFields = {
 async function rawDataToMeasurement(
   value: string,
 ): Promise<{ battery: number; measurement: Measurement } | undefined> {
-  //TODO catch if i received empty
-  const values = value.split(";");
-  const measurementsQuantity = parseFloat(
-    values[stringFields.SENSORS_QUANTITY],
-  );
+  try {
+    const values = value.split(";");
+    const measurementsQuantity = parseFloat(
+      values[stringFields.SENSORS_QUANTITY],
+    );
 
-  const measurements = values
-    .slice(
-      stringFields.MEASUREMENTS,
-      stringFields.MEASUREMENTS + measurementsQuantity,
-    )
-    .map((measurement) => parseFloat(measurement));
+    const measurements = values
+      .slice(
+        stringFields.MEASUREMENTS,
+        stringFields.MEASUREMENTS + measurementsQuantity,
+      )
+      .map((measurement) => parseFloat(measurement));
 
-  const measurementValue = verifyMeasurements(measurements);
-  if (measurementValue) {
-    const battery = parseFloat(values[stringFields.BATERY]);
-    const location = await getLocation();
-    const measurement: Measurement = {
-      height: measurementValue,
-      timestamp: Date.now(),
-      latitude: location!.coords.latitude,
-      longitude: location!.coords.longitude,
-    };
+    const measurementValue = verifyMeasurements(measurements);
+    if (measurementValue) {
+      const battery = parseFloat(values[stringFields.BATERY]);
 
-    return { battery: battery, measurement: measurement };
-  } else return undefined;
+      // Get location with error handling
+      let location;
+      try {
+        location = await getLocation();
+      } catch (error) {
+        console.error("Failed to get location:", error);
+        // Use last known location or default coordinates
+        location = {
+          coords: {
+            latitude: 0,
+            longitude: 0,
+          },
+        };
+        pushNotification(TS.t("location_not_available"), "warning");
+      }
+
+      const measurement: Measurement = {
+        height: measurementValue,
+        timestamp: Date.now(),
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+
+      return { battery: battery, measurement: measurement };
+    }
+    return undefined;
+  } catch (error) {
+    console.error("Error processing measurement:", error);
+    return undefined;
+  }
 }
 
 const TOLERANCE = 3.5;

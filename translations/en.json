@@ -175,7 +175,12 @@
     "paddocks_download_info": "Download current map",
     "paddocks_location_info": "Go to user's location",
     "paddocks_info_latitude": "Latitude",
-    "paddocks_info_longitude": "Longitude"
-    
+    "paddocks_info_longitude": "Longitude",
+
+    "location_not_available": "Location services not available",
+    "location_services_required": "Please enable location services",
+    "location_permission_required": "Location permission is required",
+    "location_init_failed": "Location initialization failed",
+    "location_error": "Error getting location"
   }
 }

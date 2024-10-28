@@ -110,37 +110,38 @@ function tryToReconnect(device: DeviceMin, intentsLeft: number) {
  *
  * @preconditions Bluetooth must be on, and permissions granted
  */
-const scanForPeripherals = () => {
+const scanForPeripherals = async () => {
   try {
+    const permissionsGranted = await requestPermissions();
+    if (!permissionsGranted) {
+      pushNotification(TS.t("location_permission_required"), "error");
+      return;
+    }
+
+    // Check if location service is enabled
+    const locationEnabled = await hasServicesEnabledAsync();
+    if (!locationEnabled) {
+      pushNotification(TS.t("location_services_required"), "error");
+      return;
+    }
+
     console.log("Started Scanning");
     updatePersistedDevices();
     bleManager.startDeviceScan(null, null, (error, device) => {
       if (error) {
-        //errorCallback.current(error);
-        console.error("Error scaning peripherals", error);
+        console.error("Error scanning peripherals", error);
         if (error.errorCode == BleErrorCode.BluetoothPoweredOff) {
           pushNotification(TS.t("turnon_bluetooth"), "error");
         }
-      } else {
-        //console.log('Found Device ',device?.name);
-        if (
-          device &&
-          device.name
-            ?.toUpperCase()
-            .includes(PASTUROMETER_PROPERTIES.DEVICE_BRAND.toUpperCase())
-        ) {
-          // if (device) {
-          // console.log('Scanned device');
-          // console.log(device);
-
-          store.dispatch(addDevice(getDeviceIfExists(device.id, device.name)));
-        }
+      } else if (
+        device?.name
+          ?.toUpperCase()
+          .includes(PASTUROMETER_PROPERTIES.DEVICE_BRAND.toUpperCase())
+      ) {
+        store.dispatch(addDevice(getDeviceIfExists(device.id, device.name)));
       }
-
-      //}
     });
   } catch (error) {
-    //errorCallback.current(e)
     console.error("Error scanning", error);
   }
 };
@@ -219,6 +220,7 @@ import { pushNotification } from "../pushNotification";
 import { getDeviceIfExists, updatePersistedDevices } from "./persistedDevices";
 import { DeviceMin } from "./type";
 import TS from "../../../TS";
+import { hasServicesEnabledAsync } from "expo-location";
 
 /** Set callbacks in monitors for each characteristic, it is called by the connectToDevice function
  *

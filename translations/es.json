@@ -173,7 +173,12 @@
     "paddocks_download_info": "Descargar mapa actual",
     "paddocks_location_info": "Ir hacia ubicación actual",
     "paddocks_info_latitude": "Latitud",
-    "paddocks_info_longitude": "Longitud"
+    "paddocks_info_longitude": "Longitud",
 
+    "location_not_available": "Servicios de ubicación no disponibles",
+    "location_services_required": "Por favor active los servicios de ubicación",
+    "location_permission_required": "Se requiere permiso de ubicación",
+    "location_init_failed": "No se pudo inicializar la ubicación",
+    "location_error": "Error al obtener la ubicación"
   }
 }
