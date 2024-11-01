@@ -25,6 +25,8 @@ import {
 import { MeasurementLocalDB } from "../../features/localDB/types";
 import TS from "../../../TS";
 import { sendCalibration } from "../../features/backend/calibrations";
+import useSound from "../../components/hooks/useSound";
+import { measure } from "react-native-reanimated";
 
 type CustomMeasurement = MeasurementLocalDB & { ID: number };
 
@@ -43,15 +45,28 @@ function CalibrationMeasurement({
     (state) => state.measurement.calibrationID,
   );
 
-  async function fetchMeasurements() {
-    const measurements = await getCalibrationsMeasurements(
-      route.params.calibrationID,
+  // async function fetchMeasurements() {
+  //   const measurements = await getCalibrationsMeasurements(
+  //     route.params.calibrationID,
+  //   );
+  //   setMeasurements(measurements.reverse());
+  // }
+
+  const fetchMeasurements = useCallback(() => {
+    getCalibrationsMeasurements(route.params.calibrationID).then(
+      (measurements) => {
+        setMeasurements(measurements.reverse());
+      },
     );
-    setMeasurements(measurements.reverse());
-  }
+  }, [setMeasurements]);
+
+  const { playSound } = useSound();
 
   useEffect(() => {
     const timeout = setTimeout(fetchMeasurements, 100);
+    if (Date.now() - lastMeasurement.timestamp <= 5000) {
+      playSound();
+    }
     return () => {
       clearTimeout(timeout);
     };

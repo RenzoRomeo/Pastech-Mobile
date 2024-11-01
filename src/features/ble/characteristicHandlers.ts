@@ -46,7 +46,6 @@ const onCharacteristicUpdate = async (
         store.dispatch(setUpdateMeasures({ update: true }));
 
         if (store.getState().measurement.calibrationMode) {
-          console.log(store.getState().measurement);
           const calibrationID = store.getState().measurement.calibrationID;
           const id = await insertCalibrationMeasurement(
             calibrationID,

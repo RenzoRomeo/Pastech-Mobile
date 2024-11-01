@@ -18,6 +18,7 @@ import { useTypedSelector } from "../../../../features/store/storeHooks";
 import TS from "../../../../../TS";
 import MeasurementModal from "./MeasurementModal";
 import Item, { ITEM_HEIGHT } from "./ListItemMeasurement";
+import useSound from "../../../../components/hooks/useSound";
 //==== Navigation ==============================================
 
 const LIST_SIZE = 50;
@@ -39,10 +40,18 @@ export default function MeasurementsList() {
     });
   }, [setMeasurements]);
 
+  const { playSound } = useSound();
+
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       refreshList();
     }, 100);
+    if (Date.now() - lastMeasurement.timestamp <= 5000) {
+      playSound();
+    }
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [lastMeasurement]);
 
   const onDelete = useCallback(() => {
