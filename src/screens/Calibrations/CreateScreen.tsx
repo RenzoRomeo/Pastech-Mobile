@@ -69,15 +69,15 @@ export default function CreateCalibration({ navigation }: Props) {
           />
         </VStack>
 
-        <VStack style={{ width: "100%" }} bg="muted.50">
-          <Button
-            height={100}
-            isDisabled={!calibrationName}
-            onPress={onPressCreateFromMeasurement}
-          >
-            {TS.t("create_calibration")}
-          </Button>
-        </VStack>
+        <Button
+          height={50}
+          width={200}
+          marginBottom={10}
+          isDisabled={!calibrationName}
+          onPress={onPressCreateFromMeasurement}
+        >
+          {TS.t("create_calibration")}
+        </Button>
       </VStack>
       <NewCalibrationModal
         showModal={showModalCalibrationFromMeasurement}
