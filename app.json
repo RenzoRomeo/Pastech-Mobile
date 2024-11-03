@@ -75,6 +75,7 @@
         "android.permission.FOREGROUND_SERVICE"
       ],
       "package": "com.pastech.app",
+      "targetSdkVersion": 34,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyBcB6F5VNz-0ZXEVJMom7ClPocoa49GoG4"
