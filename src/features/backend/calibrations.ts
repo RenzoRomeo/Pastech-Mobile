@@ -1,6 +1,6 @@
-import { measure } from "react-native-reanimated";
 import TS from "../../../TS";
 import {
+  deleteCalibration,
   getCalibrationForBack,
   getCalibrationsForBack,
   getCalibrationsFromBackInLocalDB,
@@ -118,20 +118,45 @@ export async function updateLocalCalibrations(
   try {
     const calibrationsFromBackInLocalDB =
       await getCalibrationsFromBackInLocalDB();
-    calibrationsFromBack.forEach((calibration) => {
-      const calibrationFound = calibrationsFromBackInLocalDB.find((item) => {
-        return calibration.uid === item.ID.toString();
-      });
 
-      if (calibrationFound) {
-        updateCalibrationFunction(
-          calibrationFound.ID,
-          calibration.curve?.toString(),
+    const deletedCalibrationUids = calibrationsFromBack
+      .filter((cal) => cal.deleted)
+      .map((cal) => cal.uid);
+
+    if (deletedCalibrationUids.length > 0) {
+      await Promise.all(
+        deletedCalibrationUids.map((uid) => {
+          const calibToDelete = calibrationsFromBackInLocalDB.find(
+            (item) => item.ID.toString() === uid,
+          );
+          if (calibToDelete) {
+            return deleteCalibration(calibToDelete.ID);
+          }
+          return Promise.resolve();
+        }),
+      );
+    }
+
+    const activeCalibrations = calibrationsFromBack.filter(
+      (cal) => !cal.deleted,
+    );
+
+    await Promise.all(
+      activeCalibrations.map(async (calibration) => {
+        const calibrationFound = calibrationsFromBackInLocalDB.find(
+          (item) => calibration.uid === item.ID.toString(),
         );
-      } else {
-        insertCalibrationFromBack(calibration);
-      }
-    });
+
+        if (calibrationFound) {
+          await updateCalibrationFunction(
+            calibrationFound.ID,
+            calibration.curve?.toString(),
+          );
+        } else {
+          await insertCalibrationFromBack(calibration);
+        }
+      }),
+    );
   } catch (err) {
     console.error("Error on updateLocalCalibrations", err);
   }
